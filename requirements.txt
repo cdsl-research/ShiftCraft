@@ -1,0 +1,5 @@
+# venv Source
+# sqllite3
+# kubernetes
+pymysql
+mysql.connector
