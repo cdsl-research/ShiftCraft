@@ -24,10 +24,12 @@ try:
     with conn.cursor() as cursor:
 
         # SQLクエリを実行
-        query = 'SELECT post_date, cleaned_uri, total_count FROM wp_nissy_kekka_new;'
-        query2 = 'select * from wp_nissy_counts;'
+        # query = 'SELECT post_date, cleaned_uri, total_count FROM wp_nissy_kekka_new;'
+        # query2 = 'select * from wp_nissy_counts;'
+
+
         cursor.execute(query)
-        cursor.execute(query2)
+        # cursor.execute(query2)
 
         # 結果を取得
         results = cursor.fetchall()

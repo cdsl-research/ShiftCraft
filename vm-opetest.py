@@ -1,17 +1,17 @@
 import mysql.connector
 
-# # Kubernetes上のSQLサービスの情報
-# k8s_ns = "nissy"
-# k8s_svc = "nissy-sql"
+# Kubernetes上のSQLサービスの情報
+k8s_ns = "nissy"
+k8s_svc = "nissy-sql"
 
-# # Kubernetesクラスタ内のSQLサービスに接続するための情報を取得
-# # サービスのClusterIPを使用する
-# sql_service_cluster_ip = f"{k8s_svc}.{k8s_ns}.svc.cluster.local"
-# print(sql_service_cluster_ip)
+# Kubernetesクラスタ内のSQLサービスに接続するための情報を取得
+# サービスのClusterIPを使用する
+sql_service_cluster_ip = f"{k8s_svc}.{k8s_ns}.svc.cluster.local"
+print(sql_service_cluster_ip)
 
 # MySQLデータベースへの接続設定
 db_config = {
-    'host': 'c0a21099-local1',
+    'host': 'c0a21099-local1.a910.tak-cslab.org',
     'port': 3306,  # お使いのSQLサービスのポートに置き換えてください
     'user': 'cdsl',
     'password': 'cdsl2023',
@@ -31,23 +31,32 @@ try:
     cursor = conn.cursor()
 
     # SQLクエリを実行
-    query = 'SELECT id, cleaned_uri, post_title, post_date FROM wp_nissy_kekka_new;'
-    cursor.execute(query)
+    query = '''
+            CREATE TABLE IF NOT EXISTS wp_nissy_posts (
+                post_title VARCHAR(255),
+                post_name VARCHAR(255),
+                guid VARCHAR(255),
+                post_status VARCHAR(255)
+            );
 
-    # 結果を取得
+            INSERT INTO wp_nissy_posts (post_title, post_name, guid, post_status)
+            SELECT post_title, post_name, guid, post_status
+            FROM wp_posts
+            WHERE post_status = 'publish';
+            '''
+    
+    # query2 = 'SELECT * FROM wp_nissy_posts;' 
+
+    cursor.execute(query)
+    # cursor.execute(query2)
+
     results = cursor.fetchall()
 
-    # 結果を表示
+    # 結果を表示（INSERT文の実行結果）
+    print(f"Inserted {cursor.rowcount} rows.")
+
     for row in results:
-        id_value = row[0]  # idは結果の最初の列にあると仮定
-        cleaned_uri_value = row[1]  # cleaned_uriは結果の2番目の列にあると仮定
-
-        ids.append(id_value)
-        cleaned_uris.append(cleaned_uri_value)
-
-        # print(row)
-        print(row[0], row[1])
-        # print(row[1])
+        print(row)
 
     # idsとcleaned_urisを使って何かをすることができます
 

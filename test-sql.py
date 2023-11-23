@@ -8,6 +8,9 @@ k8s_svc = "nissy-sql"
 # サービスのClusterIPを使用する
 sql_service_cluster_ip = f"{k8s_svc}.{k8s_ns}.svc.cluster.local"
 print(sql_service_cluster_ip)
+print()
+print("Started SQL Connection")
+print()
 
 # MySQLデータベースへの接続設定
 db_config = {
@@ -31,26 +34,34 @@ try:
     cursor = conn.cursor()
 
     # SQLクエリを実行
-    query = 'SELECT id, cleaned_uri, post_title, post_date FROM wp_nissy_kekka_new;'
-    cursor.execute(query)
+    queries = [
+        # 'SELECT id, cleaned_uri, post_title, post_date FROM wp_nissy_kekka_new;',
+        # 'SELECT * FROM wp_nissy_posts WHERE post_type = "page";',
+        # 'SELECT post_title, post_name, guid, post_status, post_type, total_count FROM wp_nissy_posts JOIN wp_nissy_counts ON SUBSTRING_INDEX(wp_nissy_posts.post_name, "/", -1) = SUBSTRING_INDEX(wp_nissy_counts.cleaned_uri, "/", -1)  WHERE wp_nissy_posts.post_type = "page";',
+        'SELECT id, cleaned_uri, total_count, post_title, post_type FROM wp_nissy_kekka_new ORDER BY total_count DESC;'
+    ]
 
-    # 結果を取得
-    results = cursor.fetchall()
+    for query in queries:
+        cursor.execute(query)
 
-    # 結果を表示
-    for row in results:
-        id_value = row[0]  # idは結果の最初の列にあると仮定
-        cleaned_uri_value = row[1]  # cleaned_uriは結果の2番目の列にあると仮定
+        # 結果を取得
+        results = cursor.fetchall()
 
-        ids.append(id_value)
-        cleaned_uris.append(cleaned_uri_value)
+        # 結果を表示
+        for row in results:
+            id_value = row[0]  # idは結果の最初の列にあると仮定
+            cleaned_uri_value = row[1]  # cleaned_uriは結果の2番目の列にあると仮定
 
-        # print(row)
-        print(row[0], row[1])
-        # print(row[1])
+            ids.append(id_value)
+            cleaned_uris.append(cleaned_uri_value)
+
+            # print(row[0], row[1])
+            print(row)
 
     # idsとcleaned_urisを使って何かをすることができます
 
 finally:
     # 接続を閉じる
     conn.close()
+    print()
+    print("Closed SQL Connection.")
