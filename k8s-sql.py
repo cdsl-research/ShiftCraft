@@ -12,6 +12,7 @@ print()
 print("Started SQL Connection")
 print()
 
+
 # MySQLデータベースへの接続設定
 db_config = {
     'host': 'c0a21099-master.a910.tak-cslab.org',
@@ -25,6 +26,9 @@ db_config = {
 # MySQLデータベースに接続
 conn = mysql.connector.connect(**db_config)
 
+conn.ping(reconnect=True)
+print(conn.is_connected())
+
 # idとcleaned_uriを保存するためのリスト
 ids = []
 cleaned_uris = []
@@ -37,7 +41,7 @@ try:
     queries = [
         # 'SELECT id, cleaned_uri, post_title, post_date FROM wp_nissy_kekka_new;',
         # 'SELECT * FROM wp_nissy_posts WHERE post_type = "page";',
-        # 'SELECT post_title, post_name, guid, post_status, post_type, total_count FROM wp_nissy_posts JOIN wp_nissy_counts ON SUBSTRING_INDEX(wp_nissy_posts.post_name, "/", -1) = SUBSTRING_INDEX(wp_nissy_counts.cleaned_uri, "/", -1)  WHERE wp_nissy_posts.post_type = "page";',
+        'SELECT post_title, post_name, guid, post_status, post_type, total_count FROM wp_nissy_posts JOIN wp_nissy_counts ON SUBSTRING_INDEX(wp_nissy_posts.post_name, "/", -1) = SUBSTRING_INDEX(wp_nissy_counts.cleaned_uri, "/", -1)  WHERE wp_nissy_posts.post_type = "page";',
         'SELECT id, cleaned_uri, total_count, post_title, post_type FROM wp_nissy_kekka_new ORDER BY total_count DESC;'
     ]
 
