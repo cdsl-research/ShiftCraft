@@ -111,6 +111,35 @@ try:
             wp_nissy_posts.post_type = "page";
         """,
 
+        # 固定ページまで含めた結果
+        # # wp_nissy_kekka_newテーブルが存在しない場合、作成する
+        """CREATE TABLE IF NOT EXISTS wp_nissy_kekka_new (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            cleaned_uri VARCHAR(255),
+            total_count INT,
+            post_title VARCHAR(255),
+            post_name VARCHAR(255),
+            guid VARCHAR(255),
+            post_status VARCHAR(50),
+            post_type VARCHAR(50),
+            post_date datetime
+        );""",
+
+        # WordPressの固定ページのような投稿タイプがpageのときの処理をここに追加しておく
+        """
+        INSERT INTO wp_nissy_kekka_new (cleaned_uri, post_title, post_name, guid, post_status, post_type, total_count)
+        SELECT 
+            cleaned_uri,
+            post_title, 
+            post_name, 
+            guid, 
+            post_status, 
+            post_type, 
+            total_count 
+        FROM 
+            wp_nissy_kekka
+        ORDER BY total_count DESC;
+        """,
     ]
         
     cursor.execute(queries[0])  # テーブルの作成
@@ -133,6 +162,12 @@ try:
     print("デーブル挿入完了済み.")
     print()
     cursor.execute(queries[6])  # データの挿入
+    print("デーブル挿入完了済み.")
+
+    print()
+    cursor.execute(queries[7])  # wp_nissy_kekka_new
+    print("テーブル作成完了済み.")
+    cursor.execute(queries[8])  # データの挿入
     print("デーブル挿入完了済み.")
     
     print()

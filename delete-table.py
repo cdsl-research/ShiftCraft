@@ -24,7 +24,7 @@ print(conn.is_connected())
 cursor = conn.cursor()
 
 # WordPressのテーブルを削除
-tables_to_drop = ['wp_nissy_counts', 'wp_nissy_kekka', 'wp_nissy_posts']
+tables_to_drop = ['wp_nissy_counts', 'wp_nissy_kekka', 'wp_nissy_kekka_new', 'wp_nissy_posts']
 
 for table in tables_to_drop:
     query = f"DROP TABLE IF EXISTS {table};"
