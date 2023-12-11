@@ -25,7 +25,7 @@ db_config_k8s = {
 }
 
 # MySQLデータベースに接続
-conn = mysql.connector.connect(**db_config_k8s)
+conn = mysql.connector.connect(**db_config)
 
 conn.ping(reconnect=True)
 print(conn.is_connected())
@@ -103,14 +103,16 @@ try:
 
         # WordPressの固定ページのような投稿タイプがpageのときの処理をここに追加しておく
         """
-        INSERT INTO wp_nissy_kekka (post_title, post_name, guid, post_status, post_type, total_count)
-        SELECT 
-            post_title, 
-            post_name, 
-            guid, 
-            post_status, 
-            post_type, 
-            total_count 
+        INSERT INTO wp_nissy_kekka (cleaned_uri, total_count, post_title, post_name, guid, post_status, post_type, post_date)
+        SELECT
+            cleaned_uri,  
+            total_count,
+            post_title,
+            post_name,
+            guid,
+            post_status,
+            post_type,
+            post_date
         FROM 
             wp_nissy_posts 
         JOIN 

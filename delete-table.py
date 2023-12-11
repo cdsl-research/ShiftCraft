@@ -14,8 +14,18 @@ db_config = {
     'auth_plugin': 'mysql_native_password',
 }
 
+# MySQLデータベース(k8s用)
+db_config_k8s = {
+    'host': 'c0a21099-master.a910.tak-cslab.org',
+    'port': 30200,
+    'user': 'cdsl',
+    'password': 'cdsl2023',
+    'database': 'wordpress',
+    'auth_plugin': 'mysql_native_password',
+}
+
 # MySQLデータベースに接続
-conn = mysql.connector.connect(**db_config)
+conn = mysql.connector.connect(**db_config_k8s)
 
 conn.ping(reconnect=True)
 print(conn.is_connected())
