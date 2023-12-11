@@ -180,43 +180,24 @@ try:
     cursor.execute(queries[8])  # データの挿入
     print("デーブル挿入完了済み.")
     
-    '''
-    # wp_nissy_kekka_newテーブル内の総行数を取得
-    cursor.execute("SELECT COUNT(*) FROM wp_nissy_kekka_new")
-    total_rows = cursor.fetchone()[0]
+    # wp_nissy_kekka_new テーブルの最後のIDを取得
+    cursor.execute("SELECT MAX(id) FROM wp_nissy_kekka_new;")
+    max_id = cursor.fetchone()[0]
 
-    # 抽出対象のidを取得
-    limit_value = int(0.1 * total_rows)
-    cursor.execute("SELECT id FROM wp_nissy_kekka_new ORDER BY id DESC LIMIT %s", (limit_value,))
-    selected_ids = [row[0] for row in cursor.fetchall()]
+    # 最後のIDの1割を計算
+    range_start = 1
+    range_end = max(1, int(0.1 * max_id))
 
-    # 対象の行を取得
-    if selected_ids:
-        placeholders = ', '.join(['%s'] * len(selected_ids))
-        cursor.execute(f"SELECT * FROM wp_nissy_kekka_new WHERE id IN ({placeholders})", selected_ids)
-        selected_rows = cursor.fetchall()
-    else:
-        selected_rows = []
+    print()
+    print("range_end : " + str(range_end))
 
-    # 表示
-    print("Selected Rows:")
-    for row in selected_rows:
+    # wp_nissy_kekka_new テーブルから指定範囲のデータを取得
+    cursor.execute(f"SELECT id, cleaned_uri, total_count, post_title, guid FROM wp_nissy_kekka_new WHERE id BETWEEN {range_start} AND {range_end};")
+    selected_data = cursor.fetchall()
+
+    # 取得したデータを表示
+    for row in selected_data:
         print(row)
-    '''
-
-    # wp_nissy_kekka_newテーブル内の総行数を取得
-    cursor.execute("SELECT COUNT(*) FROM wp_nissy_kekka_new")
-    total_rows = cursor.fetchone()[0]
-
-    # 抽出対象のidを取得
-    limit_value = int(0.1 * total_rows)
-    cursor.execute("SELECT id FROM wp_nissy_kekka_new ORDER BY id DESC LIMIT %s", (limit_value,))
-    selected_ids = [row[0] for row in cursor.fetchall()]
-
-    # 表示
-    print(f"Top 10% of ids: {selected_ids}")
-
-
 
 
     print()
