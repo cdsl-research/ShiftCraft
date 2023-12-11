@@ -1,5 +1,6 @@
 # venv Source
 # sqllite3
 # kubernetes
-pymysql
+# pymysql
 mysql.connector
+# subprocess
