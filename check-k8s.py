@@ -183,7 +183,7 @@ try:
 
     ok_count, ng_count = 0, 0
 
-    for i in range(0, max_id):
+    for i in range(0, range_end):
         id_value = result_data[i][0]
         cleaned_uri_value = result_data[i][1]
 
@@ -201,7 +201,7 @@ try:
             ng_count += 1
 
     # ファイルにデータを書き込む
-    output_file_path = 'all-check-output.txt'
+    output_file_path = 'check-output.txt'
     try:
         with open(output_file_path, 'w') as f:
             f.write("OK Pages:\n")

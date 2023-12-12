@@ -111,8 +111,9 @@ try:
 
         # WordPressの固定ページのような投稿タイプがpageのときの処理をここに追加しておく
         """
-        INSERT INTO wp_nissy_kekka (post_title, post_name, guid, post_status, post_type, total_count)
+        INSERT INTO wp_nissy_kekka (cleaned_uri, post_title, post_name, guid, post_status, post_type, total_count)
         SELECT 
+            cleaned_uri,
             post_title, 
             post_name, 
             guid, 
@@ -126,8 +127,7 @@ try:
         ON 
             SUBSTRING_INDEX(wp_nissy_posts.post_name, "/", -1) = SUBSTRING_INDEX(wp_nissy_counts.cleaned_uri, "/", -1) 
         WHERE 
-            wp_nissy_posts.post_type = "page";
-        """,
+            wp_nissy_posts.post_type = "page";        """,
 
         # 固定ページまで含めた結果
         # # wp_nissy_kekka_newテーブルが存在しない場合、作成する
@@ -217,12 +217,13 @@ try:
         status_code = subprocess.check_output(curl_command, shell=True, text=True).strip()
 
         # ステータスコードに応じてメッセージを表示
-        if status_code.startswith('2'):
+        if status_code.startswith(('2', '3')):
             print(f"page_{id_value} : ok")
+            print("ok:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
         else:
             print(f"page_{id_value} : NG")
-
-        print("No:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
+            print("No:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
+        
 
     # ファイルにデータを書き込む
     with open('output.txt', 'w') as f:
@@ -234,11 +235,11 @@ try:
     # for row in selected_data:
     #     print(row)
 
-    print()
+    # print()
 
-    print(result_data)
+    # print(result_data)
 
-    print()
+    # print()
 
     # print("subprocessのテスト")
     # proc = subprocess.run(["ls"],stdout = subprocess.PIPE, stderr = subprocess.PIPE)

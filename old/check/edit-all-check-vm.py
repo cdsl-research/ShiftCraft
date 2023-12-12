@@ -12,7 +12,7 @@ def create_and_insert_table(cursor, create_query, insert_query=None):
         execute_query(cursor, insert_query, "データの挿入")
 
 def check_http_status(cleaned_uri):
-    curl_command = f"curl -I http://192.168.100.146:30080{cleaned_uri} | head -n 1 | cut -d' ' -f2"
+    curl_command = f"curl -I http://192.168.100.230{cleaned_uri} | head -n 1 | cut -d' ' -f2"
     return subprocess.check_output(curl_command, shell=True, text=True).strip()
 
 def print_status_message(prefix, id_value, status, cleaned_uri_value):
@@ -21,8 +21,8 @@ def print_status_message(prefix, id_value, status, cleaned_uri_value):
 
 start_time = time.time()
 
-print("抽出検索用プログラム実行.\n")
-print("実行時間計測開始.")
+print("全数検索用プログラム実行.\n")
+print("プログラム実行時間計測開始.")
 
 print()
 print("Started SQL Connection.")
@@ -30,8 +30,8 @@ print()
 
 # MySQLデータベースへの接続設定
 db_config = {
-    'host': 'c0a21099-master.a910.tak-cslab.org',
-    'port': 30200,
+    'host': 'c0a21099-local1.a910.tak-cslab.org',
+    'port': 3306,
     'user': 'cdsl',
     'password': 'cdsl2023',
     'database': 'wordpress',
@@ -46,10 +46,6 @@ print(f"DB_接続状態 : {conn.is_connected()}")
 # idとcleaned_uriを保存するためのリスト
 ids = []
 cleaned_uris = []
-
-# ページ結果を保存するためのリスト
-ok_pages = []
-ng_pages = []
 
 try:
     # カーソルを取得
@@ -160,12 +156,12 @@ try:
                                 ORDER BY total_count DESC;"""
                             )
 
-    print("All-Contents insert Completed.")
+    print("テーブルとデータの挿入完了.")
 
     # wp_nissy_kekka_new テーブルの最後のIDを取得
     cursor.execute("SELECT MAX(id) FROM wp_nissy_kekka_new;")
     max_id = cursor.fetchone()[0]
-    # print(f"max_id : {max_id}")
+    print(f"max_id : {max_id}")
 
     # 最後のIDの1割を計算
     range_start = 1
@@ -180,6 +176,7 @@ try:
 
     # 取得したデータを変数に格納
     result_data = list(selected_data)
+    print("check\n")
 
     ok_count, ng_count = 0, 0
 
@@ -192,26 +189,18 @@ try:
 
         # ステータスコードに応じてメッセージを表示
         if status_code.startswith(('2', '3')):
-            ok_pages.append(f"{id_value}: {cleaned_uri_value}")
             print_status_message("page", id_value, "OK", cleaned_uri_value)
             ok_count += 1
         else:
-            ng_pages.append(f"{id_value}: {cleaned_uri_value}")
             print_status_message("page", id_value, "NG", cleaned_uri_value)
             ng_count += 1
 
+    '''
     # ファイルにデータを書き込む
-    output_file_path = 'all-check-output.txt'
-    try:
-        with open(output_file_path, 'w') as f:
-            f.write("OK Pages:\n")
-            f.write("\n".join(ok_pages))
-            f.write("\n\nNG Pages:\n")
-            f.write("\n".join(ng_pages))
-        print(f"データを {output_file_path} に書き込みました.")
-    except Exception as e:
-        print(f"Error: データの書き込みに失敗しました. 内容: {str(e)}")
-
+    with open('output.txt', 'w') as f:
+        for row in result_data:
+            f.write(str(row) + '\n')
+    '''
 
     print(f"OK_TotalCount : {ok_count}")
     print(f"NG_TotalCount : {ng_count}")

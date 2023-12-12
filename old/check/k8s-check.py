@@ -6,8 +6,6 @@ import time
 
 start_time = time.time()  # プログラムの実行開始時刻
 
-print("全数検索用プログラム実行.\n")
-
 print("プログラム実行時間計測開始.")
 
 print()
@@ -35,7 +33,7 @@ db_config_k8s = {
 }
 
 # MySQLデータベースに接続
-conn = mysql.connector.connect(**db_config)
+conn = mysql.connector.connect(**db_config_k8s)
 
 conn.ping(reconnect=True)
 print(conn.is_connected())
@@ -113,8 +111,9 @@ try:
 
         # WordPressの固定ページのような投稿タイプがpageのときの処理をここに追加しておく
         """
-        INSERT INTO wp_nissy_kekka (post_title, post_name, guid, post_status, post_type, total_count)
+        INSERT INTO wp_nissy_kekka (cleaned_uri, post_title, post_name, guid, post_status, post_type, total_count)
         SELECT 
+            cleaned_uri,
             post_title, 
             post_name, 
             guid, 
@@ -193,7 +192,6 @@ try:
     # wp_nissy_kekka_new テーブルの最後のIDを取得
     cursor.execute("SELECT MAX(id) FROM wp_nissy_kekka_new;")
     max_id = cursor.fetchone()[0]
-    print(f"max_id : {max_id}")
 
     # 最後のIDの1割を計算
     range_start = 1
@@ -204,14 +202,14 @@ try:
     print()
 
     # wp_nissy_kekka_new テーブルから指定範囲のデータを取得
-    cursor.execute(f"SELECT id, cleaned_uri, total_count, post_title, guid FROM wp_nissy_kekka_new;")
+    cursor.execute(f"SELECT id, cleaned_uri, total_count, post_title, guid FROM wp_nissy_kekka_new WHERE id BETWEEN {range_start} AND {range_end};")
     selected_data = cursor.fetchall()
 
     # 取得したデータを変数に格納
     result_data = list(selected_data)
     print("check\n" )
 
-    for i in range(0, max_id):
+    for i in range(0, range_end):
         id_value = result_data[i][0]
         cleaned_uri_value = result_data[i][1]
 
@@ -220,12 +218,12 @@ try:
         status_code = subprocess.check_output(curl_command, shell=True, text=True).strip()
 
         # ステータスコードに応じてメッセージを表示
-        if status_code.startswith('2'):
+        if status_code.startswith(('2', '3')):
             print(f"page_{id_value} : ok")
+            print("ok:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
         else:
             print(f"page_{id_value} : NG")
-
-        print("No:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
+            print("No:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
 
     # ファイルにデータを書き込む
     with open('output.txt', 'w') as f:
@@ -237,11 +235,11 @@ try:
     # for row in selected_data:
     #     print(row)
 
-    print()
+    # print()
 
-    print(result_data)
+    # print(result_data)
 
-    print()
+    # print()
 
     # print("subprocessのテスト")
     # proc = subprocess.run(["ls"],stdout = subprocess.PIPE, stderr = subprocess.PIPE)

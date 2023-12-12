@@ -1,4 +1,14 @@
 import mysql.connector
+import subprocess
+
+import time
+
+
+start_time = time.time()  # プログラムの実行開始時刻
+
+print("全数検索用プログラム実行.\n")
+
+print("プログラム実行時間計測開始.")
 
 print()
 print("Started SQL Connection.")
@@ -28,7 +38,7 @@ db_config_k8s = {
 conn = mysql.connector.connect(**db_config)
 
 conn.ping(reconnect=True)
-print(conn.is_connected())
+print(f"DB_接続状態 : {conn.is_connected()}")
 
 # idとcleaned_uriを保存するためのリスト
 ids = []
@@ -103,16 +113,15 @@ try:
 
         # WordPressの固定ページのような投稿タイプがpageのときの処理をここに追加しておく
         """
-        INSERT INTO wp_nissy_kekka (cleaned_uri, total_count, post_title, post_name, guid, post_status, post_type, post_date)
-        SELECT
-            cleaned_uri,  
-            total_count,
-            post_title,
-            post_name,
-            guid,
-            post_status,
-            post_type,
-            post_date
+        INSERT INTO wp_nissy_kekka (cleaned_uri, post_title, post_name, guid, post_status, post_type, total_count)
+        SELECT 
+            cleaned_uri,
+            post_title, 
+            post_name, 
+            guid, 
+            post_status, 
+            post_type, 
+            total_count 
         FROM 
             wp_nissy_posts 
         JOIN 
@@ -182,48 +191,71 @@ try:
     cursor.execute(queries[8])  # データの挿入
     print("デーブル挿入完了済み.")
     
-    '''
-    # wp_nissy_kekka_newテーブル内の総行数を取得
-    cursor.execute("SELECT COUNT(*) FROM wp_nissy_kekka_new")
-    total_rows = cursor.fetchone()[0]
+    # wp_nissy_kekka_new テーブルの最後のIDを取得
+    cursor.execute("SELECT MAX(id) FROM wp_nissy_kekka_new;")
+    max_id = cursor.fetchone()[0]
+    print(f"max_id : {max_id}")
 
-    # 抽出対象のidを取得
-    limit_value = int(0.1 * total_rows)
-    cursor.execute("SELECT id FROM wp_nissy_kekka_new ORDER BY id DESC LIMIT %s", (limit_value,))
-    selected_ids = [row[0] for row in cursor.fetchall()]
-
-    # 対象の行を取得
-    if selected_ids:
-        placeholders = ', '.join(['%s'] * len(selected_ids))
-        cursor.execute(f"SELECT * FROM wp_nissy_kekka_new WHERE id IN ({placeholders})", selected_ids)
-        selected_rows = cursor.fetchall()
-    else:
-        selected_rows = []
-
-    # 表示
-    print("Selected Rows:")
-    for row in selected_rows:
-        print(row)
-    '''
-
-    # wp_nissy_kekka_newテーブル内の総行数を取得
-    cursor.execute("SELECT COUNT(*) FROM wp_nissy_kekka_new")
-    total_rows = cursor.fetchone()[0]
-
-    # 抽出対象のidを取得
-    limit_value = int(0.1 * total_rows)
-    cursor.execute("SELECT id FROM wp_nissy_kekka_new ORDER BY id DESC LIMIT %s", (limit_value,))
-    selected_ids = [row[0] for row in cursor.fetchall()]
-
-    # 表示
-    print(f"Top 10% of ids: {selected_ids}")
-
-
-
+    # 最後のIDの1割を計算
+    range_start = 1
+    range_end = max(1, int(0.1 * max_id))
 
     print()
-
+    print("range_end : " + str(range_end))
     print()
+
+    # wp_nissy_kekka_new テーブルから指定範囲のデータを取得
+    cursor.execute(f"SELECT id, cleaned_uri, total_count, post_title, guid FROM wp_nissy_kekka_new;")
+    selected_data = cursor.fetchall()
+
+    # 取得したデータを変数に格納
+    result_data = list(selected_data)
+    print("check\n" )
+
+    ok_count, ng_count = 0, 0 
+
+    for i in range(0, max_id):
+        id_value = result_data[i][0]
+        cleaned_uri_value = result_data[i][1]
+
+        # Curlを使用してHTTPステータスコードを取得
+        curl_command = f"curl -I http://192.168.100.230{cleaned_uri_value} | head -n 1 | cut -d' ' -f2"
+        status_code = subprocess.check_output(curl_command, shell=True, text=True).strip()
+
+        # ステータスコードに応じてメッセージを表示
+        if status_code.startswith(('2', '3')):
+            print(f"page_{id_value} : ok")
+            print("ok:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
+            ok_count += 1
+
+        else:
+            print(f"page_{id_value} : NG")
+            print("No:" + str(id_value) + ": " + str(cleaned_uri_value) + "\n")
+            ng_count += 1
+
+    '''
+    # ファイルにデータを書き込む
+    with open('output.txt', 'w') as f:
+        for row in result_data:
+            f.write(str(row) + '\n')
+    '''
+
+    # # 取得したデータを表示
+    # for row in selected_data:
+    #     print(row)
+
+    # print()
+
+    # print(result_data)
+
+    # print()
+
+    # print("subprocessのテスト")
+    # proc = subprocess.run(["ls"],stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    # print(proc.stdout.decode("utf8"))
+
+    print(f"OK_TotalCount : {ok_count}")
+    print(f"NG_TotalCount : {ng_count}")
 
     conn.commit()
 
@@ -232,3 +264,11 @@ finally:
     conn.close()
     print()
     print("Closed SQL Connection.")
+
+end_time = time.time()  # プログラムの実行終了時刻
+elapsed_time = end_time - start_time
+
+print()
+print("計測終了.")
+print(f"Elapsed Time: {elapsed_time:.2f} seconds.")
+
