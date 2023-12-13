@@ -26,8 +26,8 @@ OK Pages:
 25: /archives/2464
 26: /archives/3027
 27: /archives/1211
-28: /about/facility
-29: /archives/1180
+28: /archives/1180
+29: /about/facility
 30: /archives/3104
 31: /archives/1412
 32: /archives/1049

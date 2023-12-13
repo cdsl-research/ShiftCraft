@@ -2,6 +2,9 @@ import mysql.connector
 import subprocess
 import time
 
+import urllib.parse
+import re
+
 def execute_query(cursor, query, message):
     cursor.execute(query)
     print(f"{message} 完了済み.")
@@ -186,6 +189,13 @@ try:
     for i in range(0, range_end):
         id_value = result_data[i][0]
         cleaned_uri_value = result_data[i][1]
+
+        # 検索要素が ?= で始まる場合、/archives/ に変換
+        if '?s=' in cleaned_uri_value:
+            cleaned_uri_value = re.sub(r'\?s=', '/archives/', cleaned_uri_value)
+            print(cleaned_uri_value)
+            # エスケープされていない / を / に置き換えてから URL エンコードを適用
+            cleaned_uri_value = urllib.parse.quote(cleaned_uri_value.replace('\\/', '/'))
 
         # Curlを使用してHTTPステータスコードを取得
         status_code = check_http_status(cleaned_uri_value)

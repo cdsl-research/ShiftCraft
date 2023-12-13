@@ -1,6 +1,8 @@
 import mysql.connector
 import subprocess
 import time
+import urllib.parse
+import re
 
 def execute_query(cursor, query, message):
     cursor.execute(query)
@@ -171,7 +173,7 @@ try:
     range_start = 1
     range_end = max(1, int(0.1 * max_id))
     print()
-    print("range_end : " + str(range_end))
+    print("range_end : " + str(max_id))
     print()
 
     # wp_nissy_kekka_new テーブルから指定範囲のデータを取得
@@ -187,8 +189,18 @@ try:
         id_value = result_data[i][0]
         cleaned_uri_value = result_data[i][1]
 
+
+         # 検索要素が ?= で始まる場合、/archives/ に変換
+        if '?s=' in cleaned_uri_value:
+            cleaned_uri_value = re.sub(r'\?s=', '/archives/', cleaned_uri_value)
+            print(cleaned_uri_value)
+            # エスケープされていない / を / に置き換えてから URL エンコードを適用
+            cleaned_uri_value = urllib.parse.quote(cleaned_uri_value.replace('\\/', '/'))
+
         # Curlを使用してHTTPステータスコードを取得
         status_code = check_http_status(cleaned_uri_value)
+
+        print(f'check : {cleaned_uri_value}')
 
         # ステータスコードに応じてメッセージを表示
         if status_code.startswith(('2', '3')):
