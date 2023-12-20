@@ -1,6 +1,2 @@
-# venv Source
-# sqllite3
-# kubernetes
-# pymysql
+# List of packages installed with pip.
 mysql.connector
-# subprocess
