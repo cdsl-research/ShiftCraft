@@ -15,7 +15,7 @@ def create_and_insert_table(cursor, create_query, insert_query=None):
         execute_query(cursor, insert_query, "データの挿入")
 
 def check_http_status(cleaned_uri):
-    curl_command = f"curl -I http://192.168.100.146:30080{cleaned_uri} | head -n 1 | cut -d' ' -f2"
+    curl_command = f"curl -I http://192.168.100.155:30280{cleaned_uri} | head -n 1 | cut -d' ' -f2"
     return subprocess.check_output(curl_command, shell=True, text=True).strip()
 
 def print_status_message(prefix, id_value, status, cleaned_uri_value):
@@ -33,8 +33,8 @@ print()
 
 # MySQLデータベースへの接続設定
 db_config = {
-    'host': 'c0a21099-master.a910.tak-cslab.org',
-    'port': 30200,
+    'host': 'c0a21099-local1.a910.tak-cslab.org',
+    'port': 3306,
     'user': 'cdsl',
     'password': 'cdsl2023',
     'database': 'wordpress',
